@@ -1,0 +1,13 @@
+#! /bin/bash
+
+userN=`whoami`
+
+mypid=`ps -u ${userN} | grep keymngserver | awk '{print $1}'`
+
+if [ -z ${mypid} ];then
+	echo "The process is not started."
+	exit 1;
+fi
+
+kill -10 ${mypid}
+echo "kill keymngserver successful"

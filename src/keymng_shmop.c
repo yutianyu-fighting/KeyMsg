@@ -68,7 +68,7 @@ int KeyMng_ShmWrite(int shmhdl, int maxnodenum, NodeSHMInfo *pNodeInfo)
 	int				ret = 0, i = 0;
 	NodeSHMInfo  	tmpNodeInfo; 		//空结点
 	NodeSHMInfo		*pNode = NULL;
-	
+					
 	void 			*mapaddr = NULL;
 	
 	memset(&tmpNodeInfo, 0, sizeof(NodeSHMInfo));

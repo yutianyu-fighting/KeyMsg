@@ -147,13 +147,13 @@ int main(void)
 		return ret;
 	}
 	
-	while (1) {	
+		while (1) {	
 		if (flg == 0) 
 			break;
 		
 		ret = sckServer_accept(listenfd, timeout, &connfd);
 		if (ret == Sck_ErrTimeOut){
-			KeyMng_Log(__FILE__, __LINE__, KeyMngLevel[2], ret, "---等待客户端连接超时---");
+			//KeyMng_Log(__FILE__, __LINE__, KeyMngLevel[2], ret, "---等待客户端连接超时---");
 			continue;	
 		} else if(ret != 0)  {
 			KeyMng_Log(__FILE__, __LINE__, KeyMngLevel[4], ret, "sckServer_accept() err:%d", ret);	
@@ -166,7 +166,7 @@ int main(void)
  	//服务器端环境释放 
 	sckServer_destroy();
 	
-	printf("服务器 优雅退出。\n\n");
+	//printf("服务器 优雅退出。\n\n");
 
 	return 0;	
 }

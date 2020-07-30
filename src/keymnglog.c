@@ -50,7 +50,8 @@ static int ITCAST_Error_OpenFile(int* pf)
 #ifdef WIN32
 	sprintf(fileName, "c:\\itcast\\%s",ITCAST_DEBUG_FILE_);
 #else
-	sprintf(fileName, "%s/log/%s", getenv("HOME"), ITCAST_DEBUG_FILE_);
+	//sprintf(fileName, "%s/log/%s", getenv("HOME"), ITCAST_DEBUG_FILE_);
+	sprintf(fileName, "./log/%s",ITCAST_DEBUG_FILE_);
 #endif
     
     *pf = open(fileName, O_WRONLY|O_CREAT|O_APPEND, 0666);

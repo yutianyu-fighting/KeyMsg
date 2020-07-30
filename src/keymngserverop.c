@@ -2,15 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <mysql/mysql.h>
+
 #include "keymngserverop.h"
 #include "keymng_msg.h"
 #include "keymnglog.h" 
 #include "keymng_shmop.h"
 
-static int	seckeyid = 100;
 
 int MngServer_InitInfo(MngServer_Info *svrInfo)
-{
+{ 
 	int ret = 0;
 	strcpy(svrInfo->serverId, "0001");
 	strcpy(svrInfo->dbuser, "root");
@@ -37,6 +38,8 @@ int MngServer_Agree(MngServer_Info *svrInfo, MsgKey_Req *msgkeyReq, unsigned cha
 {
 	int ret = 0;
 	int i = 0;
+	char buf[512]={0};//存放结果的字段
+	
 	MsgKey_Res msgKey_Res;
 	
 	NodeSHMInfo nodeSHMInfo;
@@ -57,7 +60,24 @@ int MngServer_Agree(MngServer_Info *svrInfo, MsgKey_Req *msgkeyReq, unsigned cha
 	for (i = 0; i < 64; i++) {
 		msgKey_Res.r2[i] = 'a' + i;			
 	}	
-	msgKey_Res.seckeyid = seckeyid++;
+	
+	//从数据库 keysn 表中取出 seckeyid
+	/*----------------------------------------------------------------------------*/
+	//初始化数据库,获取连接
+	//MYSQL* connect = msql_conn(svrInfo->dbuser, svrInfo->dbpasswd, svrInfo->dbname);
+	//开启事务
+	//ret = mysql_BeginTran(connect);
+	MYSQL *connect = mysql_init(NULL); 
+	connect = mysql_real_connect(connect,"localhost","root","123456","datafile",0,NULL,0);
+	ret = KeyMngsvr_DBOp_GenKeyID(connect, buf);
+	if(ret!=0)
+	{
+		KeyMng_Log(__FILE__, __LINE__, KeyMngLevel[4], ret, "服务器 KeyMngsvr_DBOp_GenKeyID() err:%d", ret);
+		return ret;	
+	}
+	msgKey_Res.seckeyid = atoi(buf);
+	
+	/*----------------------------------------------------------------------------*/
 	
 	// 组织密钥节点信息结构体
 	for (i = 0; i < 64; i++) {
@@ -77,7 +97,14 @@ int MngServer_Agree(MngServer_Info *svrInfo, MsgKey_Req *msgkeyReq, unsigned cha
 	}
 
 	// --写数据库
-
+	
+	connect = mysql_init(NULL); 
+	ret = KeyMngsvr_DBOp_writeInfo(connect,&nodeSHMInfo);
+	if (ret != 0) {
+		KeyMng_Log(__FILE__, __LINE__, KeyMngLevel[4], ret, "服务器 KeyMngsvr_DBOp_writeInfo() err:%d", ret);
+		return ret;	
+	}
+	
 	// 编码应答报文  传出
 	ret = MsgEncode(&msgKey_Res, ID_MsgKey_Res, outData, datalen);
 	if (ret != 0) {
